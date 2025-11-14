@@ -21,5 +21,23 @@ def test_root_deve_retornar_hello_world():
     response = client.get('/')
 
     # assert
-    assert response.json() == {'Hello': 'World'}
+    assert response.json() == {"message": "Olá mundo!"}
+    assert response.status_code == HTTPStatus.OK
+
+
+def test_root_deve_retornar_html():
+    client = TestClient(app)
+
+    response = client.get('/html')
+
+    assert response.text == """
+    <html>
+        <head>
+            <title>Olá mundo!</title>
+        </head>
+        <body>
+            <h1>Olá mundo!</h1>
+        </body>
+    <html>
+            """
     assert response.status_code == HTTPStatus.OK

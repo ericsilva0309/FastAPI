@@ -73,3 +73,5 @@ Quando ele usa o Python global (fora do Poetry), os imports parecem “desaparec
 Selecionar o interpretador correto resolve 100% dos casos.
 
 ---
+
+se eu quiser testar um test em especifico, eu entro na pasta utilizando o comando de interatividade do python 'python -i tests/conftest.py', dentro dele eu chamo a função 'UserFactory()'

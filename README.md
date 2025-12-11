@@ -75,3 +75,7 @@ Selecionar o interpretador correto resolve 100% dos casos.
 ---
 
 se eu quiser testar um test em especifico, eu entro na pasta utilizando o comando de interatividade do python 'python -i tests/conftest.py', dentro dele eu chamo a função 'UserFactory()'
+
+
+
+docker run -e POSTGRES_USER=app_user -e POSTGRES_DB=app_db -e POSTGRES_PASSWORD=app_password --name app_database -p 5432:5432 postgres

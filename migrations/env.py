@@ -1,25 +1,31 @@
 from logging.config import fileConfig
-from sqlalchemy import create_engine, pool
+
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
 from alembic import context
 
 from fast_zero.models import table_registry
 from fast_zero.settings import Settings
 
+# Carrega config do Alembic
 config = context.config
 
-# URL síncrona para o Alembic
-database_url = Settings().SYNC_DATABASE_URL
-config.set_main_option("sqlalchemy.url", database_url)
+# Define a URL síncrona do banco
+config.set_main_option("sqlalchemy.url", Settings().DATABASE_URL)
 
+# Configuração de logging
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# Metadata das tabelas
 target_metadata = table_registry.metadata
 
 
 def run_migrations_offline():
+    """Executa migrações no modo offline."""
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=database_url,
+        url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -30,16 +36,15 @@ def run_migrations_offline():
 
 
 def run_migrations_online():
-    connectable = create_engine(
-        database_url,
+    """Executa migrações no modo online (síncrono)."""
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section),
+        prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

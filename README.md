@@ -82,3 +82,7 @@ se eu quiser testar um test em especifico, eu entro na pasta utilizando o comand
 docker run -e POSTGRES_USER=app_user -e POSTGRES_DB=app_db -e POSTGRES_PASSWORD=app_password --name app_database -p 5432:5432 postgres
 
 docker build -t "fast_zero" .
+
+
+eu adicionei as variasveis de ambiente no proprio github manualmente, daria pra fazer com gh: gh secret set -f .env
+voce vai no repositório e lica em settings depois em secrets and variables, actions e new repository secret

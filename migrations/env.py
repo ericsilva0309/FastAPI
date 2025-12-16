@@ -11,7 +11,10 @@ from fast_zero.settings import Settings
 config = context.config
 
 # Define a URL síncrona do banco
-config.set_main_option("sqlalchemy.url", Settings().DATABASE_URL)
+database_url = Settings().DATABASE_URL.replace(
+    "postgresql+asyncpg", "postgresql+psycopg"
+)
+config.set_main_option("sqlalchemy.url", database_url)
 
 # Configuração de logging
 if config.config_file_name is not None:

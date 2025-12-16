@@ -12,6 +12,7 @@
   - [Pré-requisitos](#pré-requisitos)
   - [Quickstart — executar localmente](#quickstart--executar-localmente)
     - [Com Docker (recomendado)](#com-docker-recomendado)
+  - [Como gerar a `SECRET_KEY`](#como-gerar-a-secret_key)
     - [Sem Docker (dev)](#sem-docker-dev)
   - [Gerenciamento de dependências (Poetry)](#gerenciamento-de-dependências-poetry)
   - [Configuração do VS Code (Pylance)](#configuração-do-vs-code-pylance)
@@ -63,6 +64,20 @@ Fast Zero é uma API concebida com as seguintes premissas:
 
 ### Com Docker (recomendado)
 1. Copie `.env.example` → `.env` e ajuste valores.  
+   
+## Como gerar a `SECRET_KEY`
+
+Para gerar uma `SECRET_KEY` segura (recomendada para usar no `.env`), execute no terminal:
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+````
+
+* Esse comando gera uma string hexadecimal de 64 caracteres (32 bytes) com entropia criptograficamente segura, adequada para assinar JWTs e cookies.
+* Alternativa (URL-safe): `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
+
+⚠️ **Importante:** não comite o `.env` no repositório. Em produção, defina a `SECRET_KEY` explicitamente via variáveis de ambiente ou secret manager — não use a chave gerada automaticamente em ambientes públicos.
+
 2. Build & up:
 ```bash
 docker compose up --build

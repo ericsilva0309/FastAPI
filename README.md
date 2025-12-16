@@ -12,6 +12,7 @@
   - [Pré-requisitos](#pré-requisitos)
   - [Quickstart — executar localmente](#quickstart--executar-localmente)
     - [Com Docker (recomendado)](#com-docker-recomendado)
+    - [Sem Docker (dev)](#sem-docker-dev)
   - [Gerenciamento de dependências (Poetry)](#gerenciamento-de-dependências-poetry)
   - [Configuração do VS Code (Pylance)](#configuração-do-vs-code-pylance)
   - [Variáveis de ambiente](#variáveis-de-ambiente)
@@ -24,10 +25,14 @@
   - [CI: GitHub Actions](#ci-github-actions)
   - [Arquitetura do código — responsabilidades](#arquitetura-do-código--responsabilidades)
   - [Fluxo de execução (Request Lifecycle)](#fluxo-de-execução-request-lifecycle)
+    - [Diagrama (Mermaid) — fluxo de requisição](#diagrama-mermaid--fluxo-de-requisição)
   - [Como adicionar uma nova feature (passo a passo)](#como-adicionar-uma-nova-feature-passo-a-passo)
   - [Comandos úteis / FAQ / Troubleshooting](#comandos-úteis--faq--troubleshooting)
   - [Contribuição e boas práticas](#contribuição-e-boas-práticas)
   - [Apêndice — comandos rápidos](#apêndice--comandos-rápidos)
+  - [Diagramas adicionais (opcionais)](#diagramas-adicionais-opcionais)
+    - [Arquitetura em camadas](#arquitetura-em-camadas)
+    - [Sequência (async runtime vs migrations)](#sequência-async-runtime-vs-migrations)
 
 ---
 
@@ -61,7 +66,7 @@ Fast Zero é uma API concebida com as seguintes premissas:
 2. Build & up:
 ```bash
 docker compose up --build
-
+````
 
 O `entrypoint.sh` do container irá:
 
@@ -248,6 +253,26 @@ Melhorias: cache de dependências, separar lint/unit/integration, usar service p
 5. **Persistência** — Operações de banco são realizadas com `await` usando SQLAlchemy Async (`asyncpg`).
 6. **Resposta** — Resultado é serializado em JSON e retornado ao cliente.
 
+### Diagrama (Mermaid) — fluxo de requisição
+
+```mermaid
+flowchart LR
+  Client["Client (browser / client)"] -->|HTTP Request| Uvicorn["Uvicorn"]
+  Uvicorn --> FastAPI["FastAPI (app)"]
+  FastAPI --> Router["Router (fast_zero/routers/*)"]
+  Router --> Handler["Handler / Controller"]
+  Handler -->|Depends|get_session["get_session() (AsyncSession)"]
+  Handler --> Service["Service / Business Logic"]
+  Service --> Repo["Repository / ORM (SQLAlchemy Async)"]
+  Repo -->|asyncpg| Postgres["PostgreSQL"]
+  Postgres --> Repo
+  Repo --> Service
+  Service --> Handler
+  Handler --> Router
+  Router --> FastAPI
+  FastAPI -->|HTTP Response| Client
+```
+
 ---
 
 ## Como adicionar uma nova feature (passo a passo)
@@ -311,3 +336,35 @@ poetry run pytest
 poetry run uvicorn fast_zero.app:app --reload
 docker compose up --build
 ```
+
+---
+
+## Diagramas adicionais (opcionais)
+
+### Arquitetura em camadas
+
+```mermaid
+graph LR
+  Client --> API["FastAPI (routers)"]
+  API --> Service["Services (business)"]
+  Service --> Repo["Repository (ORM)"]
+  Repo --> DB["PostgreSQL (asyncpg)"]
+  CI["GitHub Actions"] -->|runs| Tests["Tests"]
+  CI -->|builds| DockerImage["Docker Image"]
+```
+
+### Sequência (async runtime vs migrations)
+
+```mermaid
+sequenceDiagram
+  participant API as FastAPI (async)
+  participant DB as PostgreSQL (asyncpg)
+  participant Alembic as Alembic (sync)
+
+  API->>DB: query (await, asyncpg)
+  DB-->>API: result
+  Alembic->>DB: migration (psycopg, sync)
+  DB-->>Alembic: ack
+```
+
+---

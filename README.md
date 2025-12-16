@@ -164,6 +164,7 @@ SECRET_KEY=troque_por_uma_chave_secreta
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
+[Como gerar secret-key](#como-gerar-a-secret_key)
 
 GitHub Actions — configurar secrets: `Settings → Secrets and variables → Actions` ou `gh secret set -f .env`.
 
